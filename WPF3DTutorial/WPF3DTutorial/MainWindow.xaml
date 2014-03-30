@@ -24,7 +24,8 @@
                     </LinearGradientBrush>
                 </StackPanel.Background>
                 <StackPanel Margin="10">
-                    <Button Name="simpleButton" Content="Simple"/>
+                    <Button x:Name="simpleButton" Content="Simple"/>
+                    <Button x:Name="cubeButton" Content="Cube"/>
                 </StackPanel>
             </StackPanel>
             <Viewport3D Name="mainViewport" ClipToBounds="True">
