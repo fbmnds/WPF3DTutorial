@@ -17,8 +17,8 @@
         triangleMesh.Positions.Add(p1)
         triangleMesh.Positions.Add(p2)
         triangleMesh.TriangleIndices.Add(0)
-        triangleMesh.TriangleIndices.Add(2) ///
-        triangleMesh.TriangleIndices.Add(1) ///
+        triangleMesh.TriangleIndices.Add(2) /// the triangle will be invisible 
+        triangleMesh.TriangleIndices.Add(1) /// with reordered indices
         let normal = calculateNormal p0 p1 p2
         triangleMesh.Normals.Add(normal)
         triangleMesh.Normals.Add(normal)
@@ -101,22 +101,17 @@
     let loadWindow() =
         let window = MainWindow()
 
-        let debug() =
-            let mutable s = ""
-            s <- "Count = " + window.mainViewport.Children.Count.ToString()
-            for i in [0 .. window.mainViewport.Children.Count-1] do
-                s <- s + "\n" + (window.mainViewport.Children.[i]).ToString()
-            s |> System.Windows.MessageBox.Show |> ignore
-
-        let viewportBaseline =
-            let mutable set = Set.empty<int>   
-            for i in [0 .. window.mainViewport.Children.Count-1] do
-                set <- set.Add i
-            set
-        
+        /// the C# solution checks the type of the already registered 'window.mainViewport' children
+        /// it seems to be preferable to identify the baseline / removable children via indices 
+        /// (in this specific case, there is only one baseline child ) 
+        let viewportBaseline = 
+            [0 .. window.mainViewport.Children.Count-1] // [0 .. -1] = []
+            |> Set.ofList
+        /// keep baseline while removing 'window.mainViewport' descendants
         let restoreViewportBaseline() = 
-            for i in [0 .. window.mainViewport.Children.Count-1] do
-                if not (viewportBaseline.Contains i) then window.mainViewport.Children.RemoveAt i
+            [0 .. window.mainViewport.Children.Count-1]
+            |> List.filter (fun i -> not (viewportBaseline.Contains i))
+            |> List.iter window.mainViewport.Children.RemoveAt
 
         (fun sender e -> 
                restoreViewportBaseline()
