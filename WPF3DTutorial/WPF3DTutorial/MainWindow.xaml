@@ -4,16 +4,8 @@
         Title="" Height="450" Width="500">
 
     <Grid>
-        <DockPanel 
-  Width="Auto" 
-  VerticalAlignment="Stretch" 
-  Height="Auto" 
-  HorizontalAlignment="Stretch" 
-  Grid.ColumnSpan="1" 
-  Grid.Column="0" 
-  Grid.Row="0" 
-  Margin="0,0,0,0" 
-  Grid.RowSpan="1">
+        <DockPanel Width="Auto"  VerticalAlignment="Stretch" Height="Auto" HorizontalAlignment="Stretch" 
+                   Grid.ColumnSpan="1" Grid.Column="0" Grid.Row="0" Margin="0,0,0,0" Grid.RowSpan="1">
             <StackPanel>
                 <StackPanel.Background>
                     <LinearGradientBrush>
@@ -24,25 +16,34 @@
                     </LinearGradientBrush>
                 </StackPanel.Background>
                 <StackPanel Margin="10">
+                    <TextBlock Text="Camera X Position:"/>
+                    <TextBox x:Name="cameraPositionXTextBox" MaxLength="5" HorizontalAlignment="Left" Text="9"/>
+                    <TextBlock Text="Camera Y Position:"/>
+                    <TextBox x:Name="cameraPositionYTextBox" MaxLength="5" HorizontalAlignment="Left" Text="8"/>
+                    <TextBlock Text="Camera Z Position:"/>
+                    <TextBox x:Name="cameraPositionZTextBox" MaxLength="5" HorizontalAlignment="Left" Text="10"/>
+                    <Separator/>
+                    <TextBlock Text="Look Direction X:"/>
+                    <TextBox x:Name="lookAtXTextBox" MaxLength="5" HorizontalAlignment="Left" Text="-9"/>
+                    <TextBlock Text="Look Direction Y:"/>
+                    <TextBox x:Name="lookAtYTextBox" MaxLength="5" HorizontalAlignment="Left" Text="-8"/>
+                    <TextBlock Text="Look Direction Z:"/>
+                    <TextBox x:Name="lookAtZTextBox" MaxLength="5" HorizontalAlignment="Left" Text="-10"/>
+                    <Separator/>
+                    <!-- buttons -->
                     <Button x:Name="simpleButton" Content="Simple"/>
                     <Button x:Name="cubeButton" Content="Cube"/>
                 </StackPanel>
             </StackPanel>
             <Viewport3D Name="mainViewport" ClipToBounds="True">
                 <Viewport3D.Camera>
-                    <PerspectiveCamera 
-	  FarPlaneDistance="100"
-	  LookDirection="-11,-10,-9"
-	  UpDirection="0,1,0"
-	  NearPlaneDistance="1" 
-	  Position="11,10,9" 
-	  FieldOfView="70" />
+                    <PerspectiveCamera FarPlaneDistance="100" LookDirection="-11,-10,-9" 
+                                       UpDirection="0,1,0" NearPlaneDistance="1" 
+                                       Position="11,10,9" FieldOfView="70" />
                 </Viewport3D.Camera>
                 <ModelVisual3D>
                     <ModelVisual3D.Content>
-                        <DirectionalLight 
-	    Color="White" 
-	    Direction="-2,-3,-1" />
+                        <DirectionalLight Color="White" Direction="-2,-3,-1" />
                     </ModelVisual3D.Content>
                 </ModelVisual3D>
             </Viewport3D>

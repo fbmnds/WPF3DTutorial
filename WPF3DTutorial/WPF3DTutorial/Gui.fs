@@ -4,7 +4,14 @@
     open System.Windows.Controls
     open System.Windows.Media
     open System.Windows.Media.Media3D
+    open System
     open FSharpx
+
+    let (|Float|_|) (s: string) =
+        let mutable x = 0.0
+        let style = System.Globalization.NumberStyles.Float
+        let culture = System.Globalization.CultureInfo.CreateSpecificCulture("en-GB")
+        if System.Double.TryParse(s, style, culture, &x) then Some x else None
 
     type MainWindow = XAML<"MainWindow.xaml">
 
@@ -97,13 +104,47 @@
         with
         | ex -> ex.ToString() |> System.Windows.MessageBox.Show |> ignore
 
+    let setCamera (camera: PerspectiveCamera) ((posX: string), posY, posZ, lookAtX, lookAtY, lookAtZ) =
+        //camera = (PerspectiveCamera)mainViewport.Camera;
+        let x, y, z = (|Float|_|) posX, (|Float|_|) posY, (|Float|_|) posZ
+        match x, y, z with
+        | None, _, _ -> ignore x
+        | _, None, _ -> ignore y
+        | _, _, None -> ignore z
+        | Some x, Some y, Some z -> camera.Position <- new Point3D (x, y, z)
+        
+        let a, b, c = (|Float|_|) lookAtX, (|Float|_|) lookAtY, (|Float|_|) lookAtZ
+        match a, b, c with
+        | None, _, _ -> ignore a
+        | _, None, _ -> ignore b
+        | _, _, None -> ignore c
+        | Some a, Some b, Some c -> camera.LookDirection <- new Vector3D (a, b, c)
 
     let loadWindow() =
         let window = MainWindow()
+        let camera = window.mainViewport.Camera :?> PerspectiveCamera
+        
+        /// cannot access a TextBox by name (unlike Button);
+        /// is this a XAML TypeProvider error?
+        /// WORKAROUND: use the FindName method
+        let getTextBoxValue name = 
+            try
+                (window.mainViewport.FindName(name) :?> TextBox).Text
+            with 
+            | ex -> ex.ToString() |> System.Windows.MessageBox.Show |> ignore; ""
+
+        let getCurrentTextBoxValues () =
+            let posX = getTextBoxValue "cameraPositionXTextBox"
+            let posY = getTextBoxValue "cameraPositionYTextBox"
+            let posZ = getTextBoxValue "cameraPositionZTextBox"
+            let lookAtX = getTextBoxValue "lookAtXTextBox"
+            let lookAtY = getTextBoxValue "lookAtYTextBox"
+            let lookAtZ = getTextBoxValue "lookAtZTextBox"
+            (posX, posY, posZ, lookAtX, lookAtY, lookAtZ)
 
         /// the C# solution checks the type of the already registered 'window.mainViewport' children
         /// it seems to be preferable to identify the baseline / removable children via indices 
-        /// (in this specific case, there is only one baseline child ) 
+        /// (in this specific case, there is only one baseline child) 
         let viewportBaseline = 
             [0 .. window.mainViewport.Children.Count-1] // [0 .. -1] = []
             |> Set.ofList
@@ -115,11 +156,13 @@
 
         (fun sender e -> 
                restoreViewportBaseline()
+               setCamera camera (getCurrentTextBoxValues())
                window.mainViewport.Children.Add(simpleButtonClick())) 
         |> addButtonHandler (window.simpleButton)
    
         (fun sender e ->  
               restoreViewportBaseline()
+              setCamera camera (getCurrentTextBoxValues())
               window.mainViewport.Children.Add(cubeButtonClick())) 
         |> addButtonHandler (window.cubeButton)    
 
