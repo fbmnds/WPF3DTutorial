@@ -99,15 +99,33 @@
 
 
     let loadWindow() =
-       let window = MainWindow()
+        let window = MainWindow()
 
-       (fun sender e -> 
-            window.mainViewport.Children.Add(simpleButtonClick())) 
-       |> addButtonHandler (window.simpleButton)
+        let debug() =
+            let mutable s = ""
+            s <- "Count = " + window.mainViewport.Children.Count.ToString()
+            for i in [0 .. window.mainViewport.Children.Count-1] do
+                s <- s + "\n" + (window.mainViewport.Children.[i]).ToString()
+            s |> System.Windows.MessageBox.Show |> ignore
+
+        let viewportBaseline =
+            let mutable set = Set.empty<int>   
+            for i in [0 .. window.mainViewport.Children.Count-1] do
+                set <- set.Add i
+            set
+        
+        let restoreViewportBaseline() = 
+            for i in [0 .. window.mainViewport.Children.Count-1] do
+                if not (viewportBaseline.Contains i) then window.mainViewport.Children.RemoveAt i
+
+        (fun sender e -> 
+               restoreViewportBaseline()
+               window.mainViewport.Children.Add(simpleButtonClick())) 
+        |> addButtonHandler (window.simpleButton)
    
-       (fun sender e ->  
-            //window <- MainWindow()
-            window.mainViewport.Children.Add(cubeButtonClick())) 
-       |> addButtonHandler (window.cubeButton)
+        (fun sender e ->  
+              restoreViewportBaseline()
+              window.mainViewport.Children.Add(cubeButtonClick())) 
+        |> addButtonHandler (window.cubeButton)    
 
-       window.Root
+        window.Root
