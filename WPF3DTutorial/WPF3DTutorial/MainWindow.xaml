@@ -33,6 +33,10 @@
                     <!-- buttons -->
                     <Button x:Name="simpleButton" Content="Simple"/>
                     <Button x:Name="cubeButton" Content="Cube"/>
+                    <Separator/>
+                    <CheckBox x:Name="normalsCheckBox">Show Normals</CheckBox>
+                    <TextBlock Text="Normal Size:"/>
+                    <TextBox x:Name="normalSizeTextBox" Text="1"/>
                 </StackPanel>
             </StackPanel>
             <Viewport3D Name="mainViewport" ClipToBounds="True">
