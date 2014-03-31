@@ -29,7 +29,12 @@
         |> Set.ofList
     /// keep baseline while removing 'window.mainViewport' descendants
     let restoreViewportBaseline () = 
-        let isDue (c: Visual3D) = not (viewportBaseline.Contains (c.GetHashCode()))
+        //let isDue (c: Visual3D) = not (viewportBaseline.Contains (c.GetHashCode()))
+        let isDue (c: obj) =
+            match c with
+            | :? DirectionalLight -> false
+            | :? ScreenSpaceLines3D -> false
+            | _ -> true
         let next () = 
             let mutable i =  (!vp).Children.Count-1
             let mutable stop = false
@@ -47,10 +52,17 @@
             c <- next()
             
 
-    let calculateNormal (p0: Point3D) p1 p2 =
-        Vector3D.CrossProduct(p1 - p0, p2 - p0)
+    let clonePoint3D (p: Point3D) = new Point3D(p.X, p.Y, p.Z)
+    let cloneVector3D (v: Vector3D) = new Vector3D(v.X, v.Y, v.Z)
 
-    let createTriangleModel p0 p1 p2 =
+    let calculateNormal (p0: Point3D) p1 p2 =
+        cloneVector3D (Vector3D.CrossProduct(p1 - p0, p2 - p0))
+
+    
+    let createTriangleModel p0_ p1_ p2_ =
+        let p0 = clonePoint3D p0_
+        let p1 = clonePoint3D p1_
+        let p2 = clonePoint3D p2_
         let triangleMesh = new MeshGeometry3D()
         triangleMesh.Positions.Add(p0)
         triangleMesh.Positions.Add(p1)
@@ -74,15 +86,13 @@
         let p2 = new Point3D(0., 0., 5.)
         createTriangleModel p0 p1 p2
 
-
     /// The implementation relies on:
     /// 3D Tools for the Windows Presentation Foundation
     /// https://3dtools.codeplex.com/
     /// Microsoft Limited Permissive License (Ms-LPL)
     ///
     /// 
-    let buildNormals (p0: Point3D) (p1: Point3D) (p2: Point3D) normalSize =
-        let normal = calculateNormal p0 p1 p2
+    let buildNormals (p0_: Point3D) (p1_: Point3D) (p2_: Point3D) normalSize =
         /// remove the unused return value:
         /// let normalGroup = new Model3DGroup()
         let normal0Wire = new ScreenSpaceLines3D()
@@ -104,15 +114,26 @@
             | Some nsize -> mult * nsize
             | _ -> mult
         let factor = num / denom
-        let mutable p = Vector3D.Add(Vector3D.Divide(normal, factor), p0)
+
+        let p0 = clonePoint3D p0_
+        let p1 = clonePoint3D p1_
+        let p2 = clonePoint3D p2_
+        let normal = calculateNormal p0 p1 p2
+        
         normal0Wire.Points.Add(p0)
-        normal0Wire.Points.Add(p)
-        p <- Vector3D.Add(Vector3D.Divide(normal, factor), p1)
+        Vector3D.Add(Vector3D.Divide(normal, factor), p0) 
+        |> clonePoint3D 
+        |> normal0Wire.Points.Add
+        
         normal1Wire.Points.Add(p1)
-        normal1Wire.Points.Add(p)
-        p <- Vector3D.Add(Vector3D.Divide(normal, factor), p2)
+        Vector3D.Add(Vector3D.Divide(normal, factor), p1)
+        |> clonePoint3D
+        |> normal1Wire.Points.Add
+        
         normal2Wire.Points.Add(p2)
-        normal2Wire.Points.Add(p)
+        Vector3D.Add(Vector3D.Divide(normal, factor), p2)
+        |> clonePoint3D
+        |> normal2Wire.Points.Add
         /// original comment:
         // Normal wires are not models, so we can't
         // add them to the normal group.  Just add them
@@ -128,18 +149,18 @@
         
 
 
-    let createTriangleGroup p0 p1 p2 = 
+    let createTriangleGroup (p0: Point3D) (p1: Point3D) (p2: Point3D) = 
         let mesh = new MeshGeometry3D()
-        mesh.Positions.Add(p0)
-        mesh.Positions.Add(p1)
-        mesh.Positions.Add(p2)
+        mesh.Positions.Add( clonePoint3D p0 )
+        mesh.Positions.Add( clonePoint3D p1 )
+        mesh.Positions.Add( clonePoint3D p2 )
         mesh.TriangleIndices.Add(0)
         mesh.TriangleIndices.Add(1)
         mesh.TriangleIndices.Add(2)
         let normal = calculateNormal p0 p1 p2
-        mesh.Normals.Add(normal)
-        mesh.Normals.Add(normal)
-        mesh.Normals.Add(normal)
+        mesh.Normals.Add(cloneVector3D normal)
+        mesh.Normals.Add(cloneVector3D normal)
+        mesh.Normals.Add(cloneVector3D normal)
         let material = new DiffuseMaterial( new SolidColorBrush(Colors.DarkKhaki) )
         let model = new GeometryModel3D(mesh, material)
         let group = new Model3DGroup()
@@ -192,7 +213,7 @@
         model.Content <- cube
         model
 
-    let cubeButtonClick2 check normalSize =
+    let cubeButtonClick check normalSize =
         let p0 = new Point3D (0., 0., 0.)
         let p1 = new Point3D (5., 0., 0.)
         let p2 = new Point3D (5., 0., 5.)
@@ -266,8 +287,7 @@
             restoreViewportBaseline()
             setCamera camera (getCameraTextBoxValues())
             let check, normalSize = getNormalsValues()
-            let cubeButtonClick () = cubeButtonClick2 check normalSize
-            (!vp).Children.Add(cubeButtonClick()))
+            (!vp).Children.Add( cubeButtonClick check normalSize ))
     |> addButtonHandler (window.cubeButton)    
 
     /// scaffold Window
