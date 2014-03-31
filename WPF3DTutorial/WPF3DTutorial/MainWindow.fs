@@ -33,7 +33,7 @@
         let isDue (c: obj) =
             match c with
             | :? DirectionalLight -> false
-            | :? ScreenSpaceLines3D -> false
+            | :? ScreenSpaceLines3D as c -> c.Thickness <- 0.0; false
             | :? Visual3D as c -> not (viewportBaseline.Contains (c.GetHashCode()))
             | _ -> true
         let next () = 
