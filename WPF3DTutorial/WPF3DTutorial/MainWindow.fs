@@ -18,7 +18,6 @@
     
     let window = MainWindow()
     let vp = ref window.mainViewport
-    // let vpChildren = ref (!vp).Children
 
     /// the C# solution checks the type of the already registered 'window.mainViewport' children
     /// it seems to be preferable to identify the baseline / removable children via hash codes 
@@ -28,12 +27,20 @@
         |> List.map (fun i -> (!vp).Children.[i].GetHashCode())
         |> Set.ofList
     /// keep baseline while removing 'window.mainViewport' descendants
+    /// WORKAROUND: there is patch on 3DTools which implements IDisposable;
+    /// without this patch, removing ScreenSpaceLine3D from the viewport 
+    /// induces a null pointer exception in 3DTools:
+    /// http://3dtools.codeplex.com/discussions/13889
+    /// this patch is apparently not applied on the download version of 3DTools
+    /// -> hiding the normals -> memory leak;
+    /// a better workaround would build the normals only once 
+    /// and toggle their visibility depending on the UI interaction
     let restoreViewportBaseline () = 
         //let isDue (c: Visual3D) = not (viewportBaseline.Contains (c.GetHashCode()))
         let isDue (c: obj) =
             match c with
             | :? DirectionalLight -> false
-            | :? ScreenSpaceLines3D as c -> c.Thickness <- 0.0; false
+            | :? ScreenSpaceLines3D as c -> (* hiding the normals *) c.Thickness <- 0.0; false
             | :? Visual3D as c -> not (viewportBaseline.Contains (c.GetHashCode()))
             | _ -> true
         let next () = 
