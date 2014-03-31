@@ -40,6 +40,8 @@
                     <CheckBox x:Name="normalsCheckBox">Show Normals</CheckBox>
                     <TextBlock Text="Normal Size:"/>
                     <TextBox x:Name="normalSizeTextBox" Text="1"/>
+                    <Separator/>
+                    <CheckBox x:Name="wireframeCheckBox">Show Wireframe</CheckBox>
                 </StackPanel>
             </StackPanel>
             <Viewport3D Name="mainViewport" ClipToBounds="True">

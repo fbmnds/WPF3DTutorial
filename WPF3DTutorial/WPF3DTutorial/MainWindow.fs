@@ -281,6 +281,14 @@
         let normalSize = getTextBoxValue "normalSizeTextBox"
         check, normalSize
 
+    let getWireframeValue () = 
+        try 
+            let t = ((!vp).FindName("wireframeCheckBox") :?> CheckBox).IsChecked
+            if t.HasValue then t.Value else false
+        with 
+        | ex -> ex.ToString() |> System.Windows.MessageBox.Show |> ignore; false
+        
+
     let addButtonHandler (button: Button) (f: obj -> RoutedEventArgs -> unit) =
         try
             button.Click.AddHandler(new RoutedEventHandler( f ) )
@@ -300,9 +308,21 @@
             (!vp).Children.Add( cubeButtonClick check normalSize ))
     |> addButtonHandler (window.cubeButton)    
 
+    let setWireframe p0 p1 p2 =
+        let wireframe = new ScreenSpaceLines3D()
+        wireframe.Points.Add(p0)
+        wireframe.Points.Add(p1)
+        wireframe.Points.Add(p2)
+        wireframe.Points.Add(p0)
+        wireframe.Color <- (new SolidColorBrush( Colors.LightBlue )).Color
+        wireframe.Thickness <- 3.
+        (!vp).Children.Add(wireframe)
+
     let topographyButtonClick (sender: obj) (e: RoutedEventArgs) =
         restoreViewportBaseline()
         setCamera camera (getCameraTextBoxValues())
+        let check, normalSize = getNormalsValues()
+        let wire = getWireframeValue()
         let topography = new Model3DGroup()
         let points = getRandomTopographyPoints()
         for z in [0 .. 10 .. 80] do
@@ -311,11 +331,18 @@
                 |> topography.Children.Add
                 createTriangleGroup points.[x + z + 1] points.[x + z + 10] points.[x + z + 11]
                 |> topography.Children.Add
+                if check then
+                    buildNormals points.[x + z] points.[x + z + 10] points.[x + z + 1] normalSize
+                    buildNormals points.[x + z + 1] points.[x + z + 10] points.[x + z + 11] normalSize
+                if wire then
+                    setWireframe points.[x + z] points.[x + z + 10] points.[x + z + 1]
+                    setWireframe points.[x + z + 1] points.[x + z + 10] points.[x + z + 11]
         let model = new ModelVisual3D()
         model.Content <- topography
         (!vp).Children.Add(model)
+        
 
-    
+
     addButtonHandler (window.topographyButton) topographyButtonClick
 
     /// scaffold Window
