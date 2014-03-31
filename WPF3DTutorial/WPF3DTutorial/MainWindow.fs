@@ -26,23 +26,11 @@
         [0 .. (!vp).Children.Count-1] // [0 .. -1] = []
         |> List.map (fun i -> (!vp).Children.[i].GetHashCode())
         |> Set.ofList
-    /// keep baseline while removing 'window.mainViewport' descendants
-    /// WORKAROUND: there is patch on 3DTools which implements IDisposable;
-    /// without this patch, removing ScreenSpaceLine3D from the viewport 
-    /// induces a null pointer exception in 3DTools:
-    /// http://3dtools.codeplex.com/discussions/13889
-    /// this patch is apparently not applied on the download version of 3DTools
-    /// -> hiding the normals -> memory leak;
-    /// a better workaround would build the normals only once 
-    /// and toggle their visibility depending on the UI interaction
+    /// keep baseline while removing 'window.mainViewport' descendants;
+    /// using updated 3DTools library found here: 
+    /// -> https://github.com/kindohm/wpf3dtutorial
     let restoreViewportBaseline () = 
-        //let isDue (c: Visual3D) = not (viewportBaseline.Contains (c.GetHashCode()))
-        let isDue (c: obj) =
-            match c with
-            | :? DirectionalLight -> false
-            | :? ScreenSpaceLines3D as c -> (* hiding the normals *) c.Thickness <- 0.0; false
-            | :? Visual3D as c -> not (viewportBaseline.Contains (c.GetHashCode()))
-            | _ -> true
+        let isDue (c: Visual3D) = not (viewportBaseline.Contains (c.GetHashCode()))
         let next () = 
             let mutable i =  (!vp).Children.Count-1
             let mutable stop = false
