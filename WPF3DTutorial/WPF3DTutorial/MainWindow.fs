@@ -34,6 +34,7 @@
             match c with
             | :? DirectionalLight -> false
             | :? ScreenSpaceLines3D -> false
+            | :? Visual3D as c -> not (viewportBaseline.Contains (c.GetHashCode()))
             | _ -> true
         let next () = 
             let mutable i =  (!vp).Children.Count-1
