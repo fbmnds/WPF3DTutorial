@@ -86,8 +86,6 @@
     /// 3D Tools for the Windows Presentation Foundation
     /// https://3dtools.codeplex.com/
     /// Microsoft Limited Permissive License (Ms-LPL)
-    ///
-    /// 
     let buildNormals (p0_: Point3D) (p1_: Point3D) (p2_: Point3D) normalSize =
         /// remove the unused return value:
         /// let normalGroup = new Model3DGroup()
@@ -220,6 +218,22 @@
         let p7 = new Point3D (0., 5., 5.)
         createCubeModel p0 p1 p2 p3 p4 p5 p6 p7 check normalSize
 
+    /// create a 10x10 topography
+    let getRandomTopographyPoints() = 
+        let points = Array.zeroCreate<Point3D>(100)
+        let r = new Random()
+        let mutable y = 0.
+        let denom = 1000.;
+        let mutable count = 0;
+        for z in [0 .. 9] do
+            for x in [0 .. 9] do
+                System.Threading.Thread.Sleep(1)
+                y <- (float (r.Next(1, 999))) / denom
+                points.[count] <- new Point3D(float x, y, float z)
+                count <- count+1
+        points
+
+
     let setCamera (camera: PerspectiveCamera) ((posX: string), posY, posZ, lookAtX, lookAtY, lookAtZ) =
         ///set camera position
         let x, y, z = (|Float|_|) posX, (|Float|_|) posY, (|Float|_|) posZ
@@ -285,6 +299,24 @@
             let check, normalSize = getNormalsValues()
             (!vp).Children.Add( cubeButtonClick check normalSize ))
     |> addButtonHandler (window.cubeButton)    
+
+    let topographyButtonClick (sender: obj) (e: RoutedEventArgs) =
+        restoreViewportBaseline()
+        setCamera camera (getCameraTextBoxValues())
+        let topography = new Model3DGroup()
+        let points = getRandomTopographyPoints()
+        for z in [0 .. 10 .. 80] do
+            for x in [0 .. 8] do
+                createTriangleGroup points.[x + z] points.[x + z + 10] points.[x + z + 1]
+                |> topography.Children.Add
+                createTriangleGroup points.[x + z + 1] points.[x + z + 10] points.[x + z + 11]
+                |> topography.Children.Add
+        let model = new ModelVisual3D()
+        model.Content <- topography
+        (!vp).Children.Add(model)
+
+    
+    addButtonHandler (window.topographyButton) topographyButtonClick
 
     /// scaffold Window
     let loadWindow() = window.Root

@@ -1,7 +1,7 @@
 ﻿<Window
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="" Height="450" Width="500">
+        Title="" Height="500" Width="600">
 
     <Grid>
         <DockPanel Width="Auto"  VerticalAlignment="Stretch" Height="Auto" HorizontalAlignment="Stretch" 
@@ -16,6 +16,7 @@
                     </LinearGradientBrush>
                 </StackPanel.Background>
                 <StackPanel Margin="10">
+                    <!-- camera -->
                     <TextBlock Text="Camera X Position:"/>
                     <TextBox x:Name="cameraPositionXTextBox" MaxLength="5" HorizontalAlignment="Left" Text="9"/>
                     <TextBlock Text="Camera Y Position:"/>
@@ -33,7 +34,9 @@
                     <!-- buttons -->
                     <Button x:Name="simpleButton" Content="Simple"/>
                     <Button x:Name="cubeButton" Content="Cube"/>
+                    <Button x:Name="topographyButton" Content="Topography"/>
                     <Separator/>
+                    <!-- normals -->
                     <CheckBox x:Name="normalsCheckBox">Show Normals</CheckBox>
                     <TextBlock Text="Normal Size:"/>
                     <TextBox x:Name="normalSizeTextBox" Text="1"/>
