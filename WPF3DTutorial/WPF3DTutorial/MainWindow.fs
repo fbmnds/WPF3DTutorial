@@ -19,8 +19,8 @@
     let window = MainWindow()
     let vp = ref window.mainViewport
 
-    /// the C# solution checks the type of the already registered 'window.mainViewport' children
-    /// it seems to be preferable to identify the baseline / removable children via hash codes 
+    /// the C# solution identifies the baseline members by checking on their type; 
+    /// it may be preferable to identify the baseline / removable children via hash codes 
     /// (in this specific case, there is only one baseline child) 
     let viewportBaseline = 
         [0 .. (!vp).Children.Count-1] // [0 .. -1] = []
@@ -48,28 +48,21 @@
             c <- next()
             
 
-    let clonePoint3D (p: Point3D) = new Point3D(p.X, p.Y, p.Z)
-    let cloneVector3D (v: Vector3D) = new Vector3D(v.X, v.Y, v.Z)
-
-    let calculateNormal (p0: Point3D) p1 p2 =
-        cloneVector3D (Vector3D.CrossProduct(p1 - p0, p2 - p0))
+    let calculateNormal (p0: Point3D) p1 p2 = (Vector3D.CrossProduct(p1 - p0, p2 - p0))
 
     
-    let createTriangleModel p0_ p1_ p2_ =
-        let p0 = clonePoint3D p0_
-        let p1 = clonePoint3D p1_
-        let p2 = clonePoint3D p2_
+    let createTriangleModel p0 p1 p2 =
         let triangleMesh = new MeshGeometry3D()
-        triangleMesh.Positions.Add(p0)
-        triangleMesh.Positions.Add(p1)
-        triangleMesh.Positions.Add(p2)
-        triangleMesh.TriangleIndices.Add(0)
-        triangleMesh.TriangleIndices.Add(2) /// the triangle will be invisible 
-        triangleMesh.TriangleIndices.Add(1) /// with reordered indices
+        triangleMesh.Positions.Add p0
+        triangleMesh.Positions.Add p1
+        triangleMesh.Positions.Add p2
+        triangleMesh.TriangleIndices.Add 0
+        triangleMesh.TriangleIndices.Add 2 /// the triangle will be invisible 
+        triangleMesh.TriangleIndices.Add 1 /// with reordered indices
         let normal = calculateNormal p0 p1 p2
-        triangleMesh.Normals.Add(normal)
-        triangleMesh.Normals.Add(normal)
-        triangleMesh.Normals.Add(normal)
+        triangleMesh.Normals.Add normal
+        triangleMesh.Normals.Add normal
+        triangleMesh.Normals.Add normal
         let material = new DiffuseMaterial(new SolidColorBrush(Colors.DarkKhaki))
         let triangleModel = new GeometryModel3D(triangleMesh, material)
         let model = new ModelVisual3D()
@@ -86,9 +79,7 @@
     /// 3D Tools for the Windows Presentation Foundation
     /// https://3dtools.codeplex.com/
     /// Microsoft Limited Permissive License (Ms-LPL)
-    let buildNormals (p0_: Point3D) (p1_: Point3D) (p2_: Point3D) normalSize =
-        /// remove the unused return value:
-        /// let normalGroup = new Model3DGroup()
+    let buildNormals (p0: Point3D) (p1: Point3D) (p2: Point3D) normalSize =
         let normal0Wire = new ScreenSpaceLines3D()
         let normal1Wire = new ScreenSpaceLines3D()
         let normal2Wire = new ScreenSpaceLines3D()
@@ -109,24 +100,18 @@
             | _ -> mult
         let factor = num / denom
 
-        let p0 = clonePoint3D p0_
-        let p1 = clonePoint3D p1_
-        let p2 = clonePoint3D p2_
         let normal = calculateNormal p0 p1 p2
         
-        normal0Wire.Points.Add(p0)
-        Vector3D.Add(Vector3D.Divide(normal, factor), p0) 
-        |> clonePoint3D 
+        normal0Wire.Points.Add p0 
+        Vector3D.Add( Vector3D.Divide( normal, factor ), p0 ) 
         |> normal0Wire.Points.Add
         
-        normal1Wire.Points.Add(p1)
-        Vector3D.Add(Vector3D.Divide(normal, factor), p1)
-        |> clonePoint3D
+        normal1Wire.Points.Add p1 
+        Vector3D.Add (Vector3D.Divide( normal, factor ), p1)
         |> normal1Wire.Points.Add
         
-        normal2Wire.Points.Add(p2)
-        Vector3D.Add(Vector3D.Divide(normal, factor), p2)
-        |> clonePoint3D
+        normal2Wire.Points.Add p2
+        Vector3D.Add (Vector3D.Divide (normal, factor), p2)
         |> normal2Wire.Points.Add
         /// original comment:
         // Normal wires are not models, so we can't
@@ -134,54 +119,50 @@
         // to the 'viewport' for now...
         /// -> using side effects!
         /// -> different life cycle scope of cube and normals!
-        (!vp).Children.Add(normal0Wire)
-        (!vp).Children.Add(normal1Wire)
-        (!vp).Children.Add(normal2Wire)
-        ///
-        /// no return value 
-        ///normalGroup
-        
+        (!vp).Children.Add normal0Wire
+        (!vp).Children.Add normal1Wire
+        (!vp).Children.Add normal2Wire
 
 
     let createTriangleGroup (p0: Point3D) (p1: Point3D) (p2: Point3D) = 
         let mesh = new MeshGeometry3D()
-        mesh.Positions.Add( clonePoint3D p0 )
-        mesh.Positions.Add( clonePoint3D p1 )
-        mesh.Positions.Add( clonePoint3D p2 )
-        mesh.TriangleIndices.Add(0)
-        mesh.TriangleIndices.Add(1)
-        mesh.TriangleIndices.Add(2)
+        mesh.Positions.Add p0
+        mesh.Positions.Add p1
+        mesh.Positions.Add p2
+        mesh.TriangleIndices.Add 0
+        mesh.TriangleIndices.Add 1
+        mesh.TriangleIndices.Add 2
         let normal = calculateNormal p0 p1 p2
-        mesh.Normals.Add(cloneVector3D normal)
-        mesh.Normals.Add(cloneVector3D normal)
-        mesh.Normals.Add(cloneVector3D normal)
+        mesh.Normals.Add normal
+        mesh.Normals.Add normal
+        mesh.Normals.Add normal
         let material = new DiffuseMaterial( new SolidColorBrush(Colors.DarkKhaki) )
-        let model = new GeometryModel3D(mesh, material)
+        let model = new GeometryModel3D (mesh, material)
         let group = new Model3DGroup()
-        group.Children.Add(model)
+        group.Children.Add model
         group
 
     let createCubeModel p0 p1 p2 p3 p4 p5 p6 p7 check normalSize =
         let cube = new Model3DGroup()
 
         //front side triangles
-        cube.Children.Add(createTriangleGroup p3 p2 p6)
-        cube.Children.Add(createTriangleGroup p3 p6 p7)
+        cube.Children.Add (createTriangleGroup p3 p2 p6)
+        cube.Children.Add (createTriangleGroup p3 p6 p7)
         //right side triangles
-        cube.Children.Add(createTriangleGroup p2 p1 p5)
-        cube.Children.Add(createTriangleGroup p2 p5 p6)
+        cube.Children.Add (createTriangleGroup p2 p1 p5)
+        cube.Children.Add (createTriangleGroup p2 p5 p6)
         //back side triangles
-        cube.Children.Add(createTriangleGroup p1 p0 p4)
-        cube.Children.Add(createTriangleGroup p1 p4 p5)
+        cube.Children.Add (createTriangleGroup p1 p0 p4)
+        cube.Children.Add (createTriangleGroup p1 p4 p5)
         //left side triangles
-        cube.Children.Add(createTriangleGroup p0 p3 p7)
-        cube.Children.Add(createTriangleGroup p0 p7 p4)
+        cube.Children.Add (createTriangleGroup p0 p3 p7)
+        cube.Children.Add (createTriangleGroup p0 p7 p4)
         //top side triangles
-        cube.Children.Add(createTriangleGroup p7 p6 p5)
-        cube.Children.Add(createTriangleGroup p7 p5 p4)
+        cube.Children.Add (createTriangleGroup p7 p6 p5)
+        cube.Children.Add (createTriangleGroup p7 p5 p4)
         //bottom side triangles
-        cube.Children.Add(createTriangleGroup p2 p3 p0)
-        cube.Children.Add(createTriangleGroup p2 p0 p1)
+        cube.Children.Add (createTriangleGroup p2 p3 p0)
+        cube.Children.Add (createTriangleGroup p2 p0 p1)
         
         if check then 
             //front side triangles
@@ -310,13 +291,13 @@
 
     let setWireframe p0 p1 p2 =
         let wireframe = new ScreenSpaceLines3D()
-        wireframe.Points.Add(p0)
-        wireframe.Points.Add(p1)
-        wireframe.Points.Add(p2)
-        wireframe.Points.Add(p0)
+        wireframe.Points.Add p0
+        wireframe.Points.Add p1
+        wireframe.Points.Add p2
+        wireframe.Points.Add p0
         wireframe.Color <- (new SolidColorBrush( Colors.LightBlue )).Color
         wireframe.Thickness <- 3.
-        (!vp).Children.Add(wireframe)
+        (!vp).Children.Add wireframe
 
     let topographyButtonClick (sender: obj) (e: RoutedEventArgs) =
         restoreViewportBaseline()
@@ -339,7 +320,7 @@
                     setWireframe points.[x + z + 1] points.[x + z + 10] points.[x + z + 11]
         let model = new ModelVisual3D()
         model.Content <- topography
-        (!vp).Children.Add(model)
+        (!vp).Children.Add model
         
 
 
