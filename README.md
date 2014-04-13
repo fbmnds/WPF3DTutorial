@@ -9,4 +9,4 @@ Using "3D Tools for the Windows Presentation Foundation"
 
 Apache 2.0 License, where applicable
 
-![Topography](https://github.com/fbmnds/WPF3DTutorial/blob/master/topography.PNG)
+![Topography](https://github.com/fbmnds/WPF3DTutorial/blob/master/topography.PNG?raw=true)
