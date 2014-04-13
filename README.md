@@ -8,3 +8,5 @@ Using "3D Tools for the Windows Presentation Foundation"
 - Microsoft Limited Permissive License (Ms-LPL)
 
 Apache 2.0 License, where applicable
+
+![Topography](https://github.com/fbmnds/WPF3DTutorial/blob/master/topography.PNG)
