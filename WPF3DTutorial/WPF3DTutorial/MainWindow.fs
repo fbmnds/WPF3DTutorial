@@ -61,8 +61,6 @@
         triangleMesh.TriangleIndices.Add 1 /// with reordered indices
         let normal = calculateNormal p0 p1 p2
         triangleMesh.Normals.Add normal
-        triangleMesh.Normals.Add normal
-        triangleMesh.Normals.Add normal
         let material = new DiffuseMaterial(new SolidColorBrush(Colors.DarkKhaki))
         let triangleModel = new GeometryModel3D(triangleMesh, material)
         let model = new ModelVisual3D()
